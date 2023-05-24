@@ -16,9 +16,9 @@ mongoose.connect(process.env.DB_CONNECTION).then(() => {
 const postsRoutes = require("./routes/posts");
 const authRoutes = require("./routes/auth");
 
-const accesLogStream = fs.createWriteStream("./logs/access.log", {
-  flags: "a",
-});
+// const accesLogStream = fs.createWriteStream("./logs/access.log", {
+//   flags: "a",
+// });
 
 app.use(compression());
 app.use(helmet());
