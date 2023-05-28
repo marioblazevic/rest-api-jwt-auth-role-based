@@ -7,12 +7,15 @@ const helmet = require("helmet");
 const compression = require("compression");
 const morgan = require("morgan");
 const fs = require("fs");
+const sequelize = require("./util/database");
+// const Product = require('./models/Product');
 
 dotenv.config();
-mongoose.connect(process.env.DB_CONNECTION).then(() => {
-  console.log("Connected");
-});
+// mongoose.connect(process.env.DB_CONNECTION).then(() => {
+//   console.log("Connected");
+// });
 
+const productRoutes = require("./routes/products");
 const postsRoutes = require("./routes/posts");
 const authRoutes = require("./routes/auth");
 
@@ -28,6 +31,7 @@ app.use(express.json());
 
 app.use("/api/user", authRoutes);
 app.use("/posts", postsRoutes);
+app.use("/products", productRoutes);
 
 app.get("/", (req, res) => {
   res.send("We are on home!");
@@ -37,4 +41,12 @@ app.use((req, res) => {
   res.send("Page not found!");
 });
 
-app.listen(process.env.PORT || 30000);
+sequelize
+  .sync({ force: true })
+  .then((result) => {
+    // console.log(result);
+    app.listen(process.env.PORT || 30000);
+  })
+  .catch((error) => {
+    console.log(error);
+  });
