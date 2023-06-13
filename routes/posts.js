@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const Post = require("../models/Posts");
+const Post = require("../models/Post");
 const verifyToken = require("../heplers/verifyToken");
 const permit = require("../heplers/authorization");
 
@@ -8,67 +8,55 @@ router.get("/", async (req, res) => {
   try {
     const posts = await Post.find();
     res.json(posts);
-  } catch (err) {
-    res.json({ message: err });
+  } catch (error) {
+    res.json(error);
   }
 });
 
-router.post(
-  "/",
-  verifyToken,
-  permit(["manager", "developer"]),
-  async (req, res) => {
-    const post = new Post({
-      title: req.body.title,
-      description: req.body.description,
-      userId: req.user._id,
-    });
+router.post("/", verifyToken, permit(["admin"]), async (req, res) => {
+  const post = new Post({
+    title: req.body.title,
+    description: req.body.description,
+    userId: req.user._id,
+  });
 
+  try {
+    const savedPost = await post.save();
+    res.json(savedPost);
+  } catch (error) {
+    res.json(error);
+  }
+});
+
+router.delete(
+  "/:postId",
+  verifyToken,
+  permit(["admin", "tester"]),
+  async (req, res) => {
     try {
-      const savedPost = await post.save();
-      res.json(savedPost);
-    } catch (err) {
-      res.json({ message: err });
+      const removedPost = await Post.deleteOne({ _id: req.params.postId });
+      res.json(removedPost);
+    } catch (error) {
+      res.json(error);
     }
   }
 );
 
-router.get("/:postId", async (req, res) => {
-  try {
-    const post = await Post.findById(req.params.postId);
-    res.json(post);
-  } catch (err) {
-    res.json({ messsage: err });
-  }
-});
-
-router.delete("/:postId", verifyToken, async (req, res) => {
-  try {
-    const selectedPost = await Post.findById(req.params.postId);
-    if (selectedPost.userId !== req.user._id) {
-      return res.status(403).send("Not authorized!");
+router.patch(
+  "/:postId",
+  verifyToken,
+  permit(["admin", "tester"]),
+  async (req, res) => {
+    try {
+      const updatedPost = await Post.updateOne(
+        { _id: req.params.postId },
+        { $set: { title: req.body.title, description: req.body.description } }
+      );
+      res.json(updatedPost);
+    } catch (error) {
+      res.json(error);
     }
-  } catch (error) {
-    return res.json({ message: error });
   }
-  try {
-    const removedPost = await Post.deleteOne({ _id: req.params.postId });
-    res.json(removedPost);
-  } catch (err) {
-    res.json({ message: err });
-  }
-});
-
-router.patch("/:postId", async (req, res) => {
-  try {
-    const updatedPost = await Post.updateOne(
-      { _id: req.params.postId },
-      { $set: { title: req.body.title } }
-    );
-    res.json(updatedPost);
-  } catch (err) {
-    res.json({ message: err });
-  }
-});
+);
 
 module.exports = router;

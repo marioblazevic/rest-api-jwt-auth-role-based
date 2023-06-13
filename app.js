@@ -5,33 +5,24 @@ const cors = require("cors");
 const dotenv = require("dotenv");
 const helmet = require("helmet");
 const compression = require("compression");
-const morgan = require("morgan");
-const fs = require("fs");
 
 dotenv.config();
 mongoose.connect(process.env.DB_CONNECTION).then(() => {
   console.log("Connected");
 });
 
-const postsRoutes = require("./routes/posts");
+const postRoutes = require("./routes/posts");
 const authRoutes = require("./routes/auth");
-
-// const accesLogStream = fs.createWriteStream("./logs/access.log", {
-//   flags: "a",
-// });
+const todoRoutes = require("./routes/todos");
 
 app.use(compression());
 app.use(helmet());
 app.use(cors());
-// app.use(morgan("combined", { stream: accesLogStream }));
 app.use(express.json());
 
-app.use("/api/user", authRoutes);
-app.use("/posts", postsRoutes);
-
-app.get("/", (req, res) => {
-  res.send("We are on home!");
-});
+app.use("/user", authRoutes);
+app.use("/posts", postRoutes);
+app.use("/todos", todoRoutes);
 
 app.use((req, res) => {
   res.send("Page not found!");

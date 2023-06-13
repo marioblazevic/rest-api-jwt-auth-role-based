@@ -4,7 +4,7 @@ const permit = (roles) => {
     if (user && roles.includes(user.role)) {
       next();
     } else {
-      res.status(403).send({ message: "Forbidden" });
+      res.status(403).json({ message: "Forbidden" });
     }
   };
 };
